@@ -2,7 +2,7 @@ try:
     from urllib2 import urlopen, URLError
 except ImportError:
     from urllib.request import urlopen, URLError
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 from os.path import join, dirname, basename
 from os import makedirs
 from errno import EEXIST
@@ -21,11 +21,8 @@ from tempfile import gettempdir
 import warnings
 from distutils.version import LooseVersion
 
-#from tools.flash_algo import PackFlashAlgo
-
 warnings.filterwarnings("ignore")
 
-from fuzzywuzzy import process
 
 RootPackURL = "http://www.keil.com/pack/index.idx"
 
@@ -334,12 +331,6 @@ class Cache () :
             dump(self._aliases, out)
         stdout.write("\n")
 
-    def find_device(self, match) :
-        choices = process.extract(match, self.index.keys(), limit=len(self.index))
-        choices = sorted([(v, k) for k, v in choices], reverse=True)
-        if choices : choices = list(takewhile(lambda t: t[0] == choices[0][0], choices))
-        return [(v, self.index[v]) for k,v in choices]
-
     def dump_index_to_file(self, file) :
         with open(file, "wb+") as out:
             dump(self.index, out)
@@ -442,7 +433,7 @@ class Cache () :
         self.display_counter("Caching Files")
         do_queue(Reader, self.cache_pdsc_and_pack, list)
         stdout.write("\n")
-
+'''
     def pdsc_from_cache(self, url) :
         """Low level inteface for extracting a PDSC file from the cache.
 
@@ -483,3 +474,4 @@ class Cache () :
         """
         self.cache_file(url)
         return self.pdsc_from_cache(url)
+'''

@@ -1,0 +1,7 @@
+colorama>=0.3.3
+Jinja2>=2.7.3
+pyYAML
+fuzzywuzzy>=0.11
+jsonschema>=2.6
+six>=1.11.0
+PrettyTable>=0.7.2

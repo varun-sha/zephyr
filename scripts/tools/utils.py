@@ -29,7 +29,6 @@ from math import ceil
 import json
 from collections import OrderedDict
 import logging
-from intelhex import IntelHex
 
 try:
     unicode
@@ -509,19 +508,6 @@ def print_large_string(large_string):
             sys.stdout.write(large_string[start_index:
                                           start_index + string_limit])
     sys.stdout.write("\n")
-
-def intelhex_offset(filename, offset):
-    """Load a hex or bin file at a particular offset"""
-    _, inteltype = splitext(filename)
-    ih = IntelHex()
-    if inteltype == ".bin":
-        ih.loadbin(filename, offset=offset)
-    elif inteltype == ".hex":
-        ih.loadhex(filename)
-    else:
-        raise ToolException("File %s does not have a known binary file type"
-                            % filename)
-    return ih
 
 
 def integer(maybe_string, base):

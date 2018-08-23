@@ -25,7 +25,7 @@ import sys
 from copy import copy
 from inspect import getmro
 from collections import namedtuple, Mapping
-from tools.targets.LPC import patch
+#from tools.targets.LPC import patch
 from tools.paths import TOOLS_BOOTLOADERS
 from tools.utils import json_file_to_dict
 
@@ -127,7 +127,6 @@ class Target(namedtuple("Target", "name json_data resolution_order resolution_or
     # Default location of the 'targets.json' file
     __targets_json_location_default = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), '..', '..', 'targets', 'targets.json')
-    print("VARUN:"+str(__targets_json_location_default))
     # Current/new location of the 'targets.json' file
     __targets_json_location = None
 
@@ -459,86 +458,6 @@ class MTSCode(object):
     def combine_bins_mtb_mts_dragonfly(t_self, resources, elf, binf):
         """A hook for the MTB MTS Dragonfly"""
         MTSCode._combine_bins_helper("MTB_MTS_DRAGONFLY", binf)
-
-class MCU_NRF51Code(object):
-    """NRF51 Hooks"""
-    @staticmethod
-    def binary_hook(t_self, resources, _, binf):
-        """Hook that merges the soft device with the bin file"""
-        # Scan to find the actual paths of soft device
-        sdf = None
-        for softdevice_and_offset_entry\
-            in t_self.target.EXPECTED_SOFTDEVICES_WITH_OFFSETS:
-            for hexf in resources.hex_files:
-                if hexf.find(softdevice_and_offset_entry['name']) != -1:
-                    t_self.notify.debug("SoftDevice file found %s."
-                                        % softdevice_and_offset_entry['name'])
-                    sdf = hexf
-
-                if sdf is not None:
-                    break
-            if sdf is not None:
-                break
-
-        if sdf is None:
-            t_self.notify.debug("Hex file not found. Aborting.")
-            return
-
-        # Look for bootloader file that matches this soft device or bootloader
-        # override image
-        blf = None
-        if t_self.target.MERGE_BOOTLOADER is True:
-            for hexf in resources.hex_files:
-                if hexf.find(t_self.target.OVERRIDE_BOOTLOADER_FILENAME) != -1:
-                    t_self.notify.debug("Bootloader file found %s."
-                                        % t_self.target.OVERRIDE_BOOTLOADER_FILENAME)
-                    blf = hexf
-                    break
-                elif hexf.find(softdevice_and_offset_entry['boot']) != -1:
-                    t_self.notify.debug("Bootloader file found %s."
-                                        % softdevice_and_offset_entry['boot'])
-                    blf = hexf
-                    break
-
-        # Merge user code with softdevice
-        from intelhex import IntelHex
-        binh = IntelHex()
-        _, ext = os.path.splitext(binf)
-        if ext == ".hex":
-            binh.loadhex(binf)
-        elif ext == ".bin":
-            binh.loadbin(binf, softdevice_and_offset_entry['offset'])
-
-        if t_self.target.MERGE_SOFT_DEVICE is True:
-            t_self.notify.debug("Merge SoftDevice file %s"
-                                % softdevice_and_offset_entry['name'])
-            sdh = IntelHex(sdf)
-            sdh.start_addr = None
-            binh.merge(sdh)
-
-        if t_self.target.MERGE_BOOTLOADER is True and blf is not None:
-            t_self.notify.debug("Merge BootLoader file %s" % blf)
-            blh = IntelHex(blf)
-            blh.start_addr = None
-            binh.merge(blh)
-
-        with open(binf.replace(".bin", ".hex"), "w") as fileout:
-            binh.write_hex_file(fileout, write_start_addr=False)
-
-class NCS36510TargetCode:
-    @staticmethod
-    def ncs36510_addfib(t_self, resources, elf, binf):
-        from tools.targets.NCS import add_fib_at_start
-        print("binf ", binf)
-        add_fib_at_start(binf[:-4])
-
-class RTL8195ACode:
-    """RTL8195A Hooks"""
-    @staticmethod
-    def binary_hook(t_self, resources, elf, binf):
-        from tools.targets.REALTEK_RTL8195AM import rtl8195a_elf2bin
-        rtl8195a_elf2bin(t_self, elf, binf)
-################################################################################
 
 # Instantiate all public targets
 def update_target_data():

@@ -25,12 +25,11 @@ from os.path import dirname, abspath, exists, join, isabs
 import sys
 from collections import namedtuple
 from os.path import splitext, relpath
-from intelhex import IntelHex
 from jinja2 import FileSystemLoader, StrictUndefined
 from jinja2.environment import Environment
 from jsonschema import Draft4Validator, RefResolver
 
-from ..utils import (json_file_to_dict, intelhex_offset, integer,
+from ..utils import (json_file_to_dict, integer,
                      NotSupportedException)
 #from ..arm_pack_manager import Cache
 from ..targets import (CUMULATIVE_ATTRIBUTES, TARGET_MAP, generate_py_target,
@@ -545,44 +544,6 @@ class Config(object):
             return sectors
         raise ConfigException("No sector info available")
 
-    @property
-    def regions(self):
-        """Generate a list of regions from the config"""
-        if not self.target.bootloader_supported:
-            raise ConfigException("Bootloader not supported on this target.")
-        if not hasattr(self.target, "device_name"):
-            raise ConfigException("Bootloader not supported on this target: "
-                                  "targets.json `device_name` not specified.")
-        cache = Cache(False, False)
-        if self.target.device_name not in cache.index:
-            raise ConfigException("Bootloader not supported on this target: "
-                                  "targets.json `device_name` not found in "
-                                  "arm_pack_manager index.")
-        cmsis_part = cache.index[self.target.device_name]
-        if  ((self.target.bootloader_img or self.target.restrict_size) and
-             (self.target.mbed_app_start or self.target.mbed_app_size)):
-            raise ConfigException(
-                "target.bootloader_img and target.restirct_size are "
-                "incompatible with target.mbed_app_start and "
-                "target.mbed_app_size")
-        try:
-            rom_size = int(cmsis_part['memory']['IROM1']['size'], 0)
-            rom_start = int(cmsis_part['memory']['IROM1']['start'], 0)
-        except KeyError:
-            try:
-                rom_size = int(cmsis_part['memory']['PROGRAM_FLASH']['size'], 0)
-                rom_start = int(cmsis_part['memory']['PROGRAM_FLASH']['start'], 0)
-            except KeyError:
-                raise ConfigException("Not enough information in CMSIS packs to "
-                                      "build a bootloader project")
-        if self.target.bootloader_img or self.target.restrict_size:
-            return self._generate_bootloader_build(rom_start, rom_size)
-        elif self.target.mbed_app_start or self.target.mbed_app_size:
-            return self._generate_linker_overrides(rom_start, rom_size)
-        else:
-            raise ConfigException(
-                "Bootloader build requested but no bootlader configuration")
-
     @staticmethod
     def header_member_size(member):
         _, _, subtype, _ = member
@@ -618,60 +579,6 @@ class Config(object):
                 "Can not place % region inside previous region" % region_name)
         return newstart
 
-    def _generate_bootloader_build(self, rom_start, rom_size):
-        start = rom_start
-        rom_end = rom_start + rom_size
-        if self.target.bootloader_img:
-            if isabs(self.target.bootloader_img):
-                filename = self.target.bootloader_img
-            else:
-                basedir = abspath(dirname(self.app_config_location))
-                filename = join(basedir, self.target.bootloader_img)
-            if not exists(filename):
-                raise ConfigException("Bootloader %s not found" % filename)
-            part = intelhex_offset(filename, offset=rom_start)
-            if part.minaddr() != rom_start:
-                raise ConfigException("bootloader executable does not "
-                                      "start at 0x%x" % rom_start)
-            part_size = (part.maxaddr() - part.minaddr()) + 1
-            part_size = Config._align_ceiling(rom_start + part_size, self.sectors) - rom_start
-            yield Region("bootloader", rom_start, part_size, False,
-                         filename)
-            start = rom_start + part_size
-            if self.target.header_format:
-                if self.target.header_offset:
-                    start = self._assign_new_offset(
-                        rom_start, start, self.target.header_offset, "header")
-                start, region = self._make_header_region(
-                    start, self.target.header_format)
-                yield region._replace(filename=self.target.header_format)
-        if self.target.restrict_size is not None:
-            new_size = int(self.target.restrict_size, 0)
-            new_size = Config._align_floor(start + new_size, self.sectors) - start
-            yield Region("application", start, new_size, True, None)
-            start += new_size
-            if self.target.header_format and not self.target.bootloader_img:
-                if self.target.header_offset:
-                    start = self._assign_new_offset(
-                        rom_start, start, self.target.header_offset, "header")
-                start, region = self._make_header_region(
-                    start, self.target.header_format)
-                yield region
-            if self.target.app_offset:
-                start = self._assign_new_offset(
-                    rom_start, start, self.target.app_offset, "application")
-            yield Region("post_application", start, rom_end - start,
-                         False, None)
-        else:
-            if self.target.app_offset:
-                start = self._assign_new_offset(
-                    rom_start, start, self.target.app_offset, "application")
-            yield Region("application", start, rom_end - start,
-                         True, None)
-        if start > rom_start + rom_size:
-            raise ConfigException("Not enough memory on device to fit all "
-                                  "application regions")
-    
     @staticmethod
     def _find_sector(address, sectors):
         target_size = -1
