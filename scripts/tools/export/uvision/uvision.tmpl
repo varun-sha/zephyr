@@ -10,6 +10,7 @@
       <TargetName>{{name}}</TargetName>
       <ToolsetNumber>0x3</ToolsetNumber>
       <ToolsetName>ARM-GNU</ToolsetName>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>{{device.dname}}</Device>
@@ -46,14 +47,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\BUILD\</OutputDirectory>
-          <OutputName>{{name}}</OutputName>
+          <OutputDirectory>.\zephyr\</OutputDirectory>
+          <OutputName>zephyr.elf</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>0</BrowseInformation>
-          <ListingPath>.\BUILD\</ListingPath>
+          <ListingPath>.\zephyr\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -184,9 +185,9 @@
           <pFcArmRoot></pFcArmRoot>
           <FcArmLst>0</FcArmLst>
         </Utilities>
-        <TargetArmAds>
-          <ArmAdsMisc>
-            <GenerateListings>0</GenerateListings>
+        <TargetArm>
+          <ArmMisc>
+            <asLst>1</asLst>
             <asHll>1</asHll>
             <asAsm>1</asAsm>
             <asMacX>1</asMacX>
@@ -194,27 +195,11 @@
             <asFals>1</asFals>
             <asDbgD>1</asDbgD>
             <asForm>1</asForm>
-            <ldLst>0</ldLst>
+            <ldLst>1</ldLst>
             <ldmm>1</ldmm>
             <ldXref>1</ldXref>
             <BigEnd>0</BigEnd>
-            <AdsALst>1</AdsALst>
-            <AdsACrf>1</AdsACrf>
-            <AdsANop>0</AdsANop>
-            <AdsANot>0</AdsANot>
-            <AdsLLst>1</AdsLLst>
-            <AdsLmap>1</AdsLmap>
-            <AdsLcgr>1</AdsLcgr>
-            <AdsLsym>1</AdsLsym>
-            <AdsLszi>1</AdsLszi>
-            <AdsLtoi>1</AdsLtoi>
-            <AdsLsun>1</AdsLsun>
-            <AdsLven>1</AdsLven>
-            <AdsLsxf>1</AdsLsxf>
-            <RvctClst>0</RvctClst>
-            <GenPPlst>0</GenPPlst>
-            <AdsCpuType>"{{device.core.replace("D","").replace("F","")}}"</AdsCpuType>
-            <RvctDeviceName></RvctDeviceName>
+            <GCPUTYP>"{{device.core.replace("D","").replace("F","")}}"</GCPUTYP>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
@@ -348,8 +333,8 @@
               </OCR_RVCT10>
             </OnChipMemories>
             <RvctStartVector></RvctStartVector>
-          </ArmAdsMisc>
-          <Cads>
+          </ArmMisc>
+          <Carm>
             <interw>0</interw>
             <Optim>1</Optim>
             <oTime>0</oTime>
@@ -378,8 +363,8 @@
               <Undefine></Undefine>
               <IncludePath>{{include_paths}}</IncludePath>
             </VariousControls>
-          </Cads>
-          <Aads>
+          </Carm>
+          <Aarm>
             <interw>0</interw>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
@@ -396,8 +381,8 @@
               <Undefine></Undefine>
               <IncludePath></IncludePath>
             </VariousControls>
-          </Aads>
-          <LDads>
+          </Aarm>
+          <LDarm>
             <umfTarg>0</umfTarg>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
@@ -413,8 +398,8 @@
             <Misc>{{ld_flags}}</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
-          </LDads>
-        </TargetArmAds>
+          </LDarm>
+        </TargetArm>
       </TargetOption>
       <Groups>
         {% for group, files in project_files %}

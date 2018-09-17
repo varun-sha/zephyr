@@ -32,5 +32,14 @@
         "release_versions": ["2", "5"],
         "device_name": "MK64FN1M0xxx12",
         "bootloader_supported": true
+    },
+	"SAME70Q21": {
+        "supported_form_factors": ["ARDUINO"],
+        "core": "Cortex-M7F",
+        "supported_toolchains": ["GCC_ARM"],
+		"inherits": ["Target"],
+        "detect_code": ["0240"],
+        "release_versions": ["2"],
+        "device_name": "ATSAME70Q21"
     }
 }

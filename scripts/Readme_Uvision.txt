@@ -22,27 +22,23 @@ pip install -r zephyr\Scripts\tools\requirements.txt
 Setup arm based toolchain as mentioned in  http://docs.zephyrproject.org/getting_started/installation_win.html 
 & try a sample build.
 e.g:-
-cd C:\Users\varunsha\zephyr\samples\hello_world\
+cd %ZEPHYR_BASE%\samples\hello_world\
 mkdir build & cd build
-cmake -GNinja -DBOARD=frdm_k64f ..
+cmake -GNinja -DBOARD=sam_e70_xplained ..
 ninja
 
 2)
 Use "project.py" to generate uvision project( -m switch is for target, -i for ide)
 use build folder as current directory for executing script
 e.g:-
-cd C:\Users\varunsha\zephyr\samples\hello_world\build
-python -u C:\Users\varunsha\zephyr\scripts\tools\project.py -i uvision -m K64F --source .
-or
-python -u %ZEPHYR_BASE%\scripts\tools\project.py -i uvision -m K64F --source .
+cd %ZEPHYR_BASE%\zephyr\samples\hello_world\build
+python -u %ZEPHYR_BASE%\scripts\tools\project.py -i uvision -m SAME70Q21 --source .
 
 
 3)
 On Executing above command
-C:\Users\varunsha\zephyr\samples\hello_world\build>python -u C:\Users\varunsha\zephyr\scripts\tools\project.py -i uvision -m K64F --source .
 C:\Users\varunsha\zephyr\scripts
-VARUN:C:\Users\varunsha\zephyr\scripts\tools\targets\..\..\targets\targets.json
-supported targets:[u'K64F']
+supported targets:['K64F', 'SAME70Q21']
 project name:hello_world
 toolchain_name:GCC_ARM
 ide:uvision5
@@ -50,14 +46,10 @@ scan: ['.'] C:\Users\varunsha\zephyr\samples\hello_world\build
 linker:C:\Users\varunsha\zephyr\samples\hello_world\build\zephyr\linker.cmd
  generating...
  
-You will file 2 files u
-As of now GCC_ARM & K64F is supported , additional targets can be added by editing  target.json, index.json &  alias.json
+You will get 2 uvision project files in current folder
+As of now Toolchain: GCC_ARM & target:  SAME70Q21 & K64F are supported , additional targets can be added by editing  target.json, index.json &  alias.json
 
-4) Working model:-
+4)Build:-
 
-Build is done from cmake & ninja only.
-ninja generates deps file( .ninja_deps), I have used this file to create project depency list using command "ninja -t deps" using scripts & then used that file to populate zephyr source code for uvision.
-scan_resources_zephyr() is used to acheive above functionality.
-
-Then after created c/h/cpp/s/linker files resource dictionary, it is fed to uvision generater, which fills various values in template & create uvision project.
-Various helper scripts for toolchain, target, export, utils  & path are required & have been changed according to Zephyr requirements.
+Build is done from cmake & ninja only and not from Keil.
+So rebuild using cmake and run export project script. Keil project will automatically get updated if project is generated at same location.
