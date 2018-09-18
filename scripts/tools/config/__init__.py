@@ -31,7 +31,6 @@ from jsonschema import Draft4Validator, RefResolver
 
 from ..utils import (json_file_to_dict, integer,
                      NotSupportedException)
-#from ..arm_pack_manager import Cache
 from ..targets import (CUMULATIVE_ATTRIBUTES, TARGET_MAP, generate_py_target,
                        get_resolution_order, Target)
 

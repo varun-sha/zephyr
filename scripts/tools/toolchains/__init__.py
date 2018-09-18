@@ -1562,17 +1562,13 @@ class mbedToolchain:
         to_ret.update(self.config.report)
         return to_ret
 
-from tools.settings import ARM_PATH, ARMC6_PATH, GCC_ARM_PATH, IAR_PATH
+from tools.settings import GCC_ARM_PATH
 
 TOOLCHAIN_PATHS = {
-    #'ARM': ARM_PATH,
-    #'uARM': ARM_PATH,
-    #'ARMC6': ARMC6_PATH,
     'GCC_ARM': GCC_ARM_PATH
-    #'IAR': IAR_PATH
 }
 
-from tools.toolchains.arm import ARM_STD, ARM_MICRO, ARMC6
+#from tools.toolchains.arm import ARM_STD, ARM_MICRO, ARMC6
 from tools.toolchains.gcc import GCC_ARM
 #from tools.toolchains.iar import IAR
 
@@ -1581,7 +1577,6 @@ TOOLCHAIN_CLASSES = {
     #u'uARM': ARM_MICRO,
     #u'ARMC6': ARMC6,
     u'GCC_ARM': GCC_ARM
-    #u'IAR': IAR
 }
 
 TOOLCHAINS = set(TOOLCHAIN_CLASSES.keys())

@@ -1,34 +1,19 @@
 """The generic interface for all exporters.
 """
-# mbed SDK
-# Copyright (c) 2011-2016 ARM Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from __future__ import print_function, division, absolute_import
 
 import sys
 from os.path import join, abspath, dirname, exists
 from os.path import basename, relpath, normpath, splitext
-from os import makedirs, walk
+from os import makedirs
 import copy
-from shutil import rmtree, copyfile
-import zipfile
+
 
 from ..build_api import prepare_toolchain, scan_resources
 from ..toolchains import Resources
 from ..targets import TARGET_NAMES
-from . import ( makefile, zip,  uvision)
+from . import (uvision)
 
 EXPORTERS = {
     u'uvision5': uvision.Uvision,
@@ -136,62 +121,6 @@ def generate_project_files(resources, export_path, target, name, toolchain, ide,
     exporter.generate()
     files = exporter.generated_files
     return files, exporter
-
-
-def _inner_zip_export(resources, inc_repos):
-    for loc, res in resources.items():
-        to_zip = (
-            res.headers + res.s_sources + res.c_sources +\
-            res.cpp_sources + res.libraries + res.hex_files + \
-            [res.linker_script] + res.bin_files + res.objects + \
-            res.json_files + res.lib_refs + res.lib_builds)
-        if inc_repos:
-            for directory in res.repo_dirs:
-                for root, _, files in walk(directory):
-                    for repo_file in files:
-                        source = join(root, repo_file)
-                        to_zip.append(source)
-                        res.file_basepath[source] = res.base_path
-            to_zip += res.repo_files
-        yield loc, to_zip
-
-def zip_export(file_name, prefix, resources, project_files, inc_repos, notify):
-    """Create a zip file from an exported project.
-
-    Positional Parameters:
-    file_name - the file name of the resulting zip file
-    prefix - a directory name that will prefix the entire zip file's contents
-    resources - a resources object with files that must be included in the zip
-    project_files - a list of extra files to be added to the root of the prefix
-      directory
-    """
-    to_zip_list = list(_inner_zip_export(resources, inc_repos))
-    total_files = sum(len(to_zip) for _, to_zip in to_zip_list)
-    total_files += len(project_files)
-    zipped = 0
-    with zipfile.ZipFile(file_name, "w") as zip_file:
-        for prj_file in project_files:
-            zip_file.write(prj_file, join(prefix, basename(prj_file)))
-        for loc, to_zip in to_zip_list:
-            res = resources[loc]
-            for source in to_zip:
-                if source:
-                    zip_file.write(
-                        source,
-                        join(prefix, loc,
-                             relpath(source, res.file_basepath[source])))
-                    notify.progress("Zipping", source,
-                                    100 * (zipped / total_files))
-                    zipped += 1
-        for lib, res in resources.items():
-            for source in res.lib_builds:
-                target_dir, _ = splitext(source)
-                dest = join(prefix, loc,
-                            relpath(target_dir, res.file_basepath[source]),
-                            ".bld", "bldrc")
-                zip_file.write(source, dest)
-
-
 
 def export_project(src_paths, export_path, target, ide, libraries_paths=None,
                    linker_script=None, notify=None, name=None, inc_dirs=None,

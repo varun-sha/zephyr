@@ -12,7 +12,7 @@ import re
 
 from tools.arm_pack_manager import Cache
 from tools.targets import TARGET_MAP
-from tools.export.exporters import Exporter, apply_supported_whitelist
+from tools.export.exporters import Exporter
 from tools.export.cmsis import DeviceCMSIS
 
 class DeviceUvision(DeviceCMSIS):

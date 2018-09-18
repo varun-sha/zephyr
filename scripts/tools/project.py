@@ -1,5 +1,4 @@
-""" The CLI entry point for exporting projects from the mbed tools to any of the
-supported IDEs or project structures.
+""" The script to import zephyr to uvision project
 """
 from __future__ import print_function, absolute_import
 from builtins import str
@@ -15,7 +14,7 @@ sys.path.insert(0, ROOT)
 from shutil import move, rmtree
 from argparse import ArgumentParser
 
-from tools.paths import EXPORT_DIR, MBED_HAL, MBED_LIBRARIES, MBED_TARGETS_PATH
+from tools.paths import EXPORT_DIR
 from tools.export import (
     EXPORTERS,
     mcu_ide_matrix,
@@ -29,15 +28,12 @@ from tools.targets import TARGET_NAMES
 from tools.utils import (
     argparse_filestring_type,
     argparse_profile_filestring_type,
-    argparse_many,
     args_error,
 )
 from tools.utils import argparse_force_lowercase_type
-from tools.utils import argparse_force_uppercase_type
 from tools.utils import print_large_string
 from tools.utils import NotSupportedException
 from tools.options import extract_profile, list_profiles, extract_mcus
-#from tools.notifier.term import TerminalNotifier
 
 EXPORTER_ALIASES = {
     u'gcc_arm': u'make_gcc_arm',
@@ -89,12 +85,6 @@ def setup_project(
         lib_paths = None
     else:
         test = Test(program)
-        if not build:
-            # Substitute the mbed library builds with their sources
-            if MBED_LIBRARIES in test.dependencies:
-                test.dependencies.remove(MBED_LIBRARIES)
-                test.dependencies.append(MBED_HAL)
-                test.dependencies.append(MBED_TARGETS_PATH)
 
         src_paths = [test.source_dir]
         lib_paths = test.dependencies
@@ -114,13 +104,13 @@ def export(target, ide, build=None, src=None, macros=None, project_id=None,
     ide - the IDE or project structure to export to
 
     Keyword arguments:
-    build - to use the compiled mbed libraries or not
+
     src - directory or directories that contain the source to export
     macros - extra macros to add to the project
     project_id - the name of the project
     clean - start from a clean state before exporting
     zip_proj - create a zip file or not
-    ignore - list of paths to add to mbedignore
+    ignore - list of paths to add to ignore
 
     Returns an object of type Exporter (tools/exports/exporters.py)
     """
@@ -197,21 +187,6 @@ def get_args(argv):
     )
 
     group = parser.add_mutually_exclusive_group(required=False)
-    '''
-    group.add_argument(
-        "-p",
-        type=test_known,
-        dest="program",
-        help="The index of the desired test program: [0-%s]" % (len(TESTS) - 1)
-    )
-
-    group.add_argument(
-        "-n",
-        type=test_name_known,
-        dest="program",
-        help="The name of the desired test program"
-    )
-    '''
     group.add_argument(
         "-L", "--list-tests",
         action="store_true",
@@ -286,15 +261,6 @@ def get_args(argv):
         default=None
     )
 
-    parser.add_argument(
-        "--ignore",
-        dest="ignore",
-        type=argparse_many(str),
-        default=None,
-        help=("Comma separated list of patterns to add to mbedignore "
-              "(eg. ./main.cpp)")
-    )
-
     return parser.parse_args(argv), parser
 
 
@@ -344,16 +310,13 @@ def main():
                 mcu,
                 ide,
                 build=None,
-                #build=options.build,
                 src=options.source_dir,
                 macros=options.macros,
-                #project_id=options.program,
                 project_id=None,
                 zip_proj=not bool(options.source_dir),
                 build_profile=profile,
                 app_config=options.app_config,
                 export_path=options.build_dir,
-                ignore=options.ignore
             )
         except NotSupportedException as exc:
             args_error(parser, "%s not supported by %s" % (mcu, ide))
