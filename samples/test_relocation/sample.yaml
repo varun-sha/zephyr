@@ -1,0 +1,14 @@
+sample:
+  description: Code data relocation Sample
+  name: test relocation
+  platforms: all
+common:
+    tags: introduction
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "Hello World! (.*)"
+tests:
+  sample.helloworld:
+    tags: introduction
